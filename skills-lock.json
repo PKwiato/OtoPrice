@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "fastify": {
+      "source": "bobmatnyc/claude-mpm-skills",
+      "sourceType": "github",
+      "computedHash": "c7483cc5fc5e8fe77ff21ab25989f505953c18481f4f046a0ee61214e235d2b5"
+    },
+    "playwright-skill": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "a34f837b06cd5e3b13948197df671516fe96cc116d1ab73c54a75038cb19a5d6"
+    },
+    "vue-best-practices": {
+      "source": "hyf0/vue-skills",
+      "sourceType": "github",
+      "computedHash": "21132f6c11c765bd11d0d6ad081122dd858630073e2123b651e58f17b399b131"
+    }
+  }
+}
