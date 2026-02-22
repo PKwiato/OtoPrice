@@ -4,6 +4,8 @@ import { ref, onMounted, watch } from 'vue';
 const brand = ref('');
 const model = ref('');
 const pages = ref(1);
+const yearFrom = ref<number | null>(null);
+const yearTo = ref<number | null>(null);
 
 const brands = ref<{ id: string; label: string }[]>([]);
 const models = ref<{ id: string; label: string }[]>([]);
@@ -13,7 +15,7 @@ const showBrandDropdown = ref(false);
 const showModelDropdown = ref(false);
 
 const emits = defineEmits<{
-  (e: 'submit', payload: { brand: string; model: string; pages: number }): void;
+  (e: 'submit', payload: { brand: string; model: string; pages: number; yearFrom?: number; yearTo?: number }): void;
 }>();
 
 const fetchBrands = async () => {
@@ -64,7 +66,13 @@ const selectModel = (m: { id: string; label: string }) => {
 
 const onSubmit = () => {
   if (!brand.value || !model.value || pages.value < 1) return;
-  emits('submit', { brand: brand.value, model: model.value, pages: pages.value });
+  emits('submit', { 
+    brand: brand.value, 
+    model: model.value, 
+    pages: pages.value,
+    yearFrom: yearFrom.value || undefined,
+    yearTo: yearTo.value || undefined
+  });
 };
 
 onMounted(() => {
@@ -148,6 +156,29 @@ onMounted(() => {
         >
           {{ m.label }}
         </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div>
+        <label for="yearFrom" class="block text-sm font-medium text-gray-300 mb-2">Year From</label>
+        <input 
+          id="yearFrom" 
+          v-model="yearFrom" 
+          type="number" 
+          placeholder="e.g. 2010"
+          class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+        />
+      </div>
+      <div>
+        <label for="yearTo" class="block text-sm font-medium text-gray-300 mb-2">Year To</label>
+        <input 
+          id="yearTo" 
+          v-model="yearTo" 
+          type="number" 
+          placeholder="e.g. 2020"
+          class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+        />
       </div>
     </div>
 

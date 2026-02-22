@@ -28,33 +28,6 @@ const startServer = async () => {
         origin: [/localhost:\d+$/], // Allow any port on localhost
     });
 
-    const ScrapeSchema = z.object({
-        brand: z.string().min(1),
-        model: z.string().min(1),
-        pages: z.number().int().min(1).default(1),
-    });
-
-    app.post(
-        '/api/scrape',
-        {
-            schema: {
-                body: ScrapeSchema,
-            },
-        },
-        async (request, reply) => {
-            const { brand, model, pages } = request.body;
-
-            try {
-                request.log.info(`Starting scrape for ${brand} ${model} up to ${pages} pages`);
-                const results = await scrapeCarsUseCase.execute(brand, model, pages);
-                return reply.send(results);
-            } catch (err) {
-                request.log.error(err);
-                return reply.status(500).send({ error: 'Failed to scrape data.' });
-            }
-        }
-    );
-
     app.get('/api/otomoto/brands', async (request, reply) => {
         try {
             const brands = await metadataScraper.fetchBrands();
@@ -79,6 +52,28 @@ const startServer = async () => {
         } catch (err) {
             request.log.error(err);
             return reply.status(500).send({ error: 'Failed to fetch models.' });
+        }
+    });
+
+    app.get('/api/scrape', {
+        schema: {
+            querystring: z.object({
+                brand: z.string().min(1),
+                model: z.string().min(1),
+                pages: z.coerce.number().min(1).max(5),
+                yearFrom: z.coerce.number().optional(),
+                yearTo: z.coerce.number().optional()
+            })
+        }
+    }, async (request, reply) => {
+        const { brand, model, pages, yearFrom, yearTo } = request.query;
+        try {
+            request.log.info(`Starting scrape for ${brand} ${model} up to ${pages} pages, from ${yearFrom || 'any'} to ${yearTo || 'any'}`);
+            const cars = await scraper.scrapeCars(brand, model, pages, yearFrom, yearTo);
+            return reply.send(cars);
+        } catch (err) {
+            request.log.error(err);
+            return reply.status(500).send({ error: 'Scraping failed.' });
         }
     });
 

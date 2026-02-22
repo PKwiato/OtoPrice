@@ -9,19 +9,20 @@ const isLoading = ref(false);
 const results = ref<Car[]>([]);
 const error = ref<string | null>(null);
 
-const handleScrape = async ({ brand, model, pages }: { brand: string; model: string; pages: number }) => {
+const handleScrape = async ({ brand, model, pages, yearFrom, yearTo }: { brand: string; model: string; pages: number; yearFrom?: number; yearTo?: number }) => {
   isLoading.value = true;
   error.value = null;
   results.value = [];
 
   try {
-    const response = await fetch('http://localhost:3000/api/scrape', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ brand, model, pages })
-    });
+    const url = new URL('http://localhost:3000/api/scrape');
+    url.searchParams.append('brand', brand);
+    url.searchParams.append('model', model);
+    url.searchParams.append('pages', pages.toString());
+    if (yearFrom) url.searchParams.append('yearFrom', yearFrom.toString());
+    if (yearTo) url.searchParams.append('yearTo', yearTo.toString());
+
+    const response = await fetch(url.toString());
 
     if (!response.ok) {
       throw new Error(`Scrape failed with status: ${response.status}`);

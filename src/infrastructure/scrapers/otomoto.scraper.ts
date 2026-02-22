@@ -3,14 +3,17 @@ import { IScraper } from '../../application/ports/scraper.interface';
 import { launchBrowser, handleCookieConsent } from './browser-utils';
 
 export class OtomotoScraper implements IScraper {
-    async scrapeCars(brand: string, model: string, maxPages: number): Promise<Car[]> {
+    async scrapeCars(brand: string, model: string, maxPages: number, yearFrom?: number, yearTo?: number): Promise<Car[]> {
         const { browser, page } = await launchBrowser();
         const scrapedCars: Car[] = [];
         const seenUrls = new Set<string>();
 
         try {
             for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-                const listUrl = `https://www.otomoto.pl/osobowe/${brand}/${model}?page=${pageNum}`;
+                let listUrl = `https://www.otomoto.pl/osobowe/${brand}/${model}?page=${pageNum}`;
+                if (yearFrom) listUrl += `&search[filter_float_year:from]=${yearFrom}`;
+                if (yearTo) listUrl += `&search[filter_float_year:to]=${yearTo}`;
+
                 console.log(`\n--- [OtomotoScraper] Scanning Page ${pageNum} ---`);
 
                 await page.goto(listUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
