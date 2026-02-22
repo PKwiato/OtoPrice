@@ -23,7 +23,7 @@ const startServer = async () => {
 
     // Register CORS to allow requests from the Vue frontend
     await app.register(cors, {
-        origin: 'http://localhost:5173', // default Vite dev server port
+        origin: [/localhost:\d+$/], // Allow any port on localhost
     });
 
     const ScrapeSchema = z.object({

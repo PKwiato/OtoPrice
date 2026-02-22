@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import ScrapeForm from './components/ScrapeForm.vue';
 import ResultsTable from './components/ResultsTable.vue';
+import ScrapeSummary from './components/ScrapeSummary.vue';
 import type { Car } from '../../src/domain/car';
 
 const isLoading = ref(false);
@@ -57,6 +58,7 @@ const handleScrape = async ({ brand, model, pages }: { brand: string; model: str
         <span class="block sm:inline ml-2">{{ error }}</span>
       </div>
 
+      <ScrapeSummary v-if="!isLoading && results.length > 0" :results="results" />
       <ResultsTable :results="results" :is-loading="isLoading" />
       
     </div>
