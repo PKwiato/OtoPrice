@@ -1,25 +1,46 @@
 import { Car } from '../../domain/car';
 import { IScraper } from '../../application/ports/scraper.interface';
-import { launchBrowser } from './browser-utils';
+import { launchBrowser, handleCookieConsent } from './browser-utils';
 
 export class OtomotoScraper implements IScraper {
     async scrapeCars(brand: string, model: string, maxPages: number): Promise<Car[]> {
         const { browser, page } = await launchBrowser();
         const scrapedCars: Car[] = [];
+        const seenUrls = new Set<string>();
 
         try {
             for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
                 const listUrl = `https://www.otomoto.pl/osobowe/${brand}/${model}?page=${pageNum}`;
                 console.log(`\n--- [OtomotoScraper] Scanning Page ${pageNum} ---`);
 
-                await page.goto(listUrl, { waitUntil: 'networkidle', timeout: 60000 });
+                await page.goto(listUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
                 await handleCookieConsent(page);
+
+                // Check if we were redirected to a different page (e.g. back to page 1)
+                const currentUrl = page.url();
+                if (pageNum > 1 && (currentUrl.includes('page=1') || !currentUrl.includes(`page=${pageNum}`))) {
+                    console.log(`Redirected or page not found (${currentUrl}). Stopping.`);
+                    break;
+                }
 
                 // Extraction logic
                 const links = await this.extractLinks(page);
-                console.log(`Found ${links.length} ads.`);
+                console.log(`Found ${links.length} ads on page ${pageNum}.`);
 
+                if (links.length === 0) {
+                    console.log('No ads found on this page. Stopping.');
+                    break;
+                }
+
+                let newLinksFound = false;
                 for (const adUrl of links) {
+                    if (seenUrls.has(adUrl)) {
+                        continue;
+                    }
+
+                    seenUrls.add(adUrl);
+                    newLinksFound = true;
+
                     try {
                         console.log(`-> Fetching: ${adUrl.split('/').pop()}`);
                         await page.goto(adUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -38,6 +59,11 @@ export class OtomotoScraper implements IScraper {
                     } catch (e) {
                         continue;
                     }
+                }
+
+                if (!newLinksFound && pageNum > 1) {
+                    console.log('No new ads found on this page. Stopping.');
+                    break;
                 }
             }
             return scrapedCars;
