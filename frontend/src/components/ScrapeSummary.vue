@@ -44,7 +44,7 @@ const formatPrice = (value: number) => {
 </script>
 
 <template>
-  <div v-if="stats" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div v-if="stats" class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
     <!-- Total Volume Card -->
     <div class="stat-card group">
         <div class="icon-bg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition-all">

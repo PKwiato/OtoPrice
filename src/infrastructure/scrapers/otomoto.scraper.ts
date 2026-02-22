@@ -1,15 +1,10 @@
-import { chromium } from 'playwright-extra';
-import stealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { Car } from '../../domain/car';
 import { IScraper } from '../../application/ports/scraper.interface';
-
-chromium.use(stealthPlugin());
+import { launchBrowser } from './browser-utils';
 
 export class OtomotoScraper implements IScraper {
     async scrapeCars(brand: string, model: string, maxPages: number): Promise<Car[]> {
-        const browser = await chromium.launch({ headless: true });
-        const context = await browser.newContext();
-        const page = await context.newPage();
+        const { browser, page } = await launchBrowser();
         const scrapedCars: Car[] = [];
 
         try {
@@ -18,6 +13,7 @@ export class OtomotoScraper implements IScraper {
                 console.log(`\n--- [OtomotoScraper] Scanning Page ${pageNum} ---`);
 
                 await page.goto(listUrl, { waitUntil: 'networkidle', timeout: 60000 });
+                await handleCookieConsent(page);
 
                 // Extraction logic
                 const links = await this.extractLinks(page);

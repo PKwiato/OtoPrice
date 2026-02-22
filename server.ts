@@ -8,6 +8,7 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { OtomotoScraper } from './src/infrastructure/scrapers/otomoto.scraper';
 import { CsvStorage } from './src/infrastructure/storage/csv.storage';
 import { ScrapeCarsUseCase } from './src/application/use-cases/scrape-cars.use-case';
+import { OtomotoMetadataScraper } from './src/infrastructure/scrapers/otomoto-metadata.scraper';
 
 const startServer = async () => {
     const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
@@ -16,6 +17,7 @@ const startServer = async () => {
     const scraper = new OtomotoScraper();
     const storage = new CsvStorage();
     const scrapeCarsUseCase = new ScrapeCarsUseCase(scraper, storage);
+    const metadataScraper = new OtomotoMetadataScraper();
 
     // Add schema validator and serializer
     app.setValidatorCompiler(validatorCompiler);
@@ -52,6 +54,33 @@ const startServer = async () => {
             }
         }
     );
+
+    app.get('/api/otomoto/brands', async (request, reply) => {
+        try {
+            const brands = await metadataScraper.fetchBrands();
+            return reply.send(brands);
+        } catch (err) {
+            request.log.error(err);
+            return reply.status(500).send({ error: 'Failed to fetch brands.' });
+        }
+    });
+
+    app.get('/api/otomoto/models', {
+        schema: {
+            querystring: z.object({
+                brand: z.string().min(1)
+            })
+        }
+    }, async (request, reply) => {
+        const { brand } = request.query;
+        try {
+            const models = await metadataScraper.fetchModels(brand);
+            return reply.send(models);
+        } catch (err) {
+            request.log.error(err);
+            return reply.status(500).send({ error: 'Failed to fetch models.' });
+        }
+    });
 
     const close = async (signal: string) => {
         app.log.info({ signal }, "shutting down");
