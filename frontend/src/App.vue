@@ -37,6 +37,10 @@ const handleScrape = async ({ brand, model, pages, yearFrom, yearTo }: { brand: 
     isLoading.value = false;
   }
 };
+
+const removeResult = (id: string) => {
+  results.value = results.value.filter(car => car.id !== id);
+};
 </script>
 
 <template>
@@ -60,7 +64,7 @@ const handleScrape = async ({ brand, model, pages, yearFrom, yearTo }: { brand: 
       </div>
 
       <ScrapeSummary v-if="!isLoading && results.length > 0" :results="results" />
-      <ResultsTable :results="results" :is-loading="isLoading" />
+      <ResultsTable :results="results" :is-loading="isLoading" @remove="removeResult" />
       
     </div>
   </div>

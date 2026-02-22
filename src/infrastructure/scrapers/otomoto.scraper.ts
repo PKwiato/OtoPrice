@@ -121,7 +121,8 @@ export class OtomotoScraper implements IScraper {
             bodyStyle: params["Typ nadwozia"] || "",
             color: params["Kolor"] || "",
             condition: params["Stan"] || "",
-            vin: params["VIN"] || ""
+            vin: params["VIN"] || "",
+            imageUrl: ad.images?.photos?.[0]?.url || ad.images?.thumbnails?.[0]?.url || ""
         };
     }
 }

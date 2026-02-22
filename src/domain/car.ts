@@ -19,4 +19,5 @@ export interface Car {
     color: string;
     condition: string;
     vin: string;
+    imageUrl?: string;
 }

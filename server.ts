@@ -6,8 +6,6 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 // SOLID Imports
 import { OtomotoScraper } from './src/infrastructure/scrapers/otomoto.scraper';
-import { CsvStorage } from './src/infrastructure/storage/csv.storage';
-import { ScrapeCarsUseCase } from './src/application/use-cases/scrape-cars.use-case';
 import { OtomotoMetadataScraper } from './src/infrastructure/scrapers/otomoto-metadata.scraper';
 
 const startServer = async () => {
@@ -15,8 +13,6 @@ const startServer = async () => {
 
     // Dependency Injection Setup
     const scraper = new OtomotoScraper();
-    const storage = new CsvStorage();
-    const scrapeCarsUseCase = new ScrapeCarsUseCase(scraper, storage);
     const metadataScraper = new OtomotoMetadataScraper();
 
     // Add schema validator and serializer
