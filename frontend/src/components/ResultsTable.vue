@@ -11,7 +11,6 @@ const emit = defineEmits<{
   (e: 'remove', id: string): void;
 }>();
 
-const searchQuery = ref('');
 const sortKey = ref<keyof Car | ''>('');
 const sortOrder = ref<'asc' | 'desc'>('asc');
 
@@ -24,23 +23,12 @@ const setSort = (key: keyof Car) => {
   }
 };
 
-const filteredAndSortedResults = computed(() => {
+const sortedResults = computed(() => {
   let filtered = props.results;
-
-  // Search
-  if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(car => 
-      car.title.toLowerCase().includes(q) || 
-      car.city.toLowerCase().includes(q) ||
-      car.brand.toLowerCase().includes(q) ||
-      car.model.toLowerCase().includes(q)
-    );
-  }
 
   // Sort
   if (sortKey.value) {
-    filtered = [...filtered].sort((a, b) => {
+    filtered = [...filtered].sort((a: any, b: any) => {
       let valA = a[sortKey.value as keyof Car];
       let valB = b[sortKey.value as keyof Car];
 
@@ -54,8 +42,11 @@ const filteredAndSortedResults = computed(() => {
         valB = parseNum(valB);
       }
 
-      if (valA < valB) return sortOrder.value === 'asc' ? -1 : 1;
-      if (valA > valB) return sortOrder.value === 'asc' ? 1 : -1;
+      const safeValA = valA ?? '';
+      const safeValB = valB ?? '';
+
+      if (safeValA < safeValB) return sortOrder.value === 'asc' ? -1 : 1;
+      if (safeValA > safeValB) return sortOrder.value === 'asc' ? 1 : -1;
       return 0;
     });
   }
@@ -66,22 +57,6 @@ const filteredAndSortedResults = computed(() => {
 
 <template>
   <div class="mt-8">
-    <!-- Search Bar -->
-    <div v-if="results.length > 0 || isLoading" class="mb-4">
-      <div class="relative max-w-md">
-        <input 
-          v-model="searchQuery"
-          type="text" 
-          placeholder="Filter results..." 
-          class="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-        />
-        <div class="absolute left-3 top-2.5 text-gray-500">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-      </div>
-    </div>
 
     <div class="w-full overflow-x-auto rounded-xl shadow-lg border border-gray-700">
       <div v-if="isLoading" class="p-12 text-center text-gray-400 bg-gray-800">
@@ -93,7 +68,7 @@ const filteredAndSortedResults = computed(() => {
         <p>No results to display. Try searching for a car above.</p>
       </div>
 
-      <div v-else-if="filteredAndSortedResults.length === 0" class="p-12 text-center text-gray-400 bg-gray-800">
+      <div v-else-if="sortedResults.length === 0" class="p-12 text-center text-gray-400 bg-gray-800">
         <p>No results match your filter.</p>
       </div>
 
@@ -120,7 +95,7 @@ const filteredAndSortedResults = computed(() => {
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-700">
-          <tr v-for="car in filteredAndSortedResults" :key="car.id" class="group hover:bg-gray-750 transition-colors">
+          <tr v-for="car in sortedResults" :key="car.id" class="group hover:bg-gray-750 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap">
               <div v-if="car.imageUrl" class="h-12 w-20 flex-shrink-0">
                 <img :src="car.imageUrl" :alt="car.title" class="h-full w-full object-cover rounded-md shadow-sm border border-gray-700 hover:scale-110 transition-transform cursor-pointer" />
