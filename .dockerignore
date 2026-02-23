@@ -1,0 +1,9 @@
+node_modules/
+frontend/
+.git/
+.agents/
+.github/
+.vscode/
+npm-debug.log
+.env
+.npm
